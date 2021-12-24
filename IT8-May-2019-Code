@@ -1,0 +1,172 @@
+Option Explicit
+
+Public Sub start()
+    Dim row1, row2 As Long
+    Dim student_count As Integer
+    Dim student_seat_no, student_name, cgpi, college_name, elective As String
+    Dim i As Integer
+    Dim col_counter As Integer
+    
+    Dim str As String
+    Dim strLine As String
+    
+    Dim headsArray
+    Dim th_tw_arr
+    Dim ia_or_arr
+    Dim total_arr
+    Dim marks_arr
+    Dim sem_arr
+    Dim sgpi_arr
+    Dim cgpi_arr
+    
+    Dim name_line As String
+    Dim th_tw_line As String
+    Dim ia_or_line As String
+    Dim total_line As String
+    Dim sgpi_line As String
+    Dim cgpi_line As String
+    Dim credits_line As String
+    Dim marks_line As String
+    Dim ILOC_line As String
+    Dim current_ILOC As String
+    
+    Const SEAT_NO_START As String = "12183"
+    Const SEAT_NO_LENGTH As Integer = 8
+    Const RESULT_REMARK_INDEX As Integer = 9
+    
+    Dim result_sheet As Worksheet
+    Dim data_sheet As Worksheet
+    
+    headsArray = Array("SR", "SeatNo", "StudentName", "Gender", "Diploma", "Elective", "Result", "CGPI", _
+                    "SNM-TH", "SNM-TW", "SNM-IN", "SNM-OR", _
+                    "BDA-TH", "BDA-TW", "BDA-IN", "BDA-OR", _
+                    "CSM-TH", "CSM-TW", "CSM-IN", "CSM-OR", _
+                    "Elective-TH", "Elective-TW", "Elective-IN", "Elective-OR", _
+                    "Proj2-TW", "Proj2-OR", _
+                    "SEM-I", "SEM-II", "SEM-III", "SEM-IV", "SEM-V", "SEM-VI", "SEM-VII")
+                        
+    row1 = 1
+    row2 = 2
+    
+    Set result_sheet = Sheets("Result")
+    Set data_sheet = Sheets("Data")
+    
+    Sheets("Result").Cells.Clear
+
+    With result_sheet
+        For i = 0 To UBound(headsArray)
+            .Cells(1, i + 1) = headsArray(i)
+        Next
+    
+        student_count = 0
+        
+        Do While True
+            col_counter = 1
+            name_line = data_sheet.Cells(row1, 1)
+            If Len(name_line) = 0 Then
+                Exit Do
+            End If
+    
+            If Left(name_line, Len(SEAT_NO_START)) = SEAT_NO_START Then
+               
+                student_count = student_count + 1
+                student_seat_no = Left(name_line, SEAT_NO_LENGTH + 1)
+                student_name = Split(Trim(Mid(name_line, SEAT_NO_LENGTH + 2)), "(")(0)
+                student_name = IIf(Left(student_name, 1) = "/", Mid(student_name, 2), student_name)
+                
+                'theory term work line2
+                row1 = row1 + 1
+                th_tw_line = data_sheet.Cells(row1, 1)
+                th_tw_arr = Split(th_tw_line, " ")
+                
+                'IA ORAL line3
+                row1 = row1 + 1
+                ia_or_line = data_sheet.Cells(row1, 1)
+                ia_or_arr = Split(ia_or_line, " ")
+                
+                'Total line4
+                row1 = row1 + 1
+                total_line = data_sheet.Cells(row1, 1)
+                total_arr = Split(total_line, " ")
+                
+                'SGPI line5
+                row1 = row1 + 1
+                sgpi_line = data_sheet.Cells(row1, 1)
+                sgpi_arr = Split(sgpi_line, "; ")
+                
+                'display data
+                .Cells(row2, col_counter) = student_count
+                col_counter = col_counter + 1
+                
+                .Cells(row2, col_counter) = student_seat_no
+                col_counter = col_counter + 1
+                
+                .Cells(row2, col_counter) = student_name
+                col_counter = col_counter + 1
+                
+                'male/female
+                .Cells(row2, col_counter) = IIf(Mid(name_line, SEAT_NO_LENGTH + 2, 1) = "/", "F", "M")
+                col_counter = col_counter + 1
+                
+                'diploma
+                .Cells(row2, col_counter) = IIf(InStr(sgpi_line, "(DIPLOMA STUDENT)") <> 0, "Y", "N")
+                col_counter = col_counter + 1
+                
+                'elective
+                .Cells(row2, col_counter) = IIf(InStr(name_line, "ROBOTICS") <> 0, "ROBOTICS", "STQA")
+                col_counter = col_counter + 1
+                
+                'result
+                .Cells(row2, col_counter) = ia_or_arr(RESULT_REMARK_INDEX)
+                col_counter = col_counter + 1
+                
+                'CGPI
+                cgpi = Split(sgpi_arr(UBound(sgpi_arr)), " ")(1)
+                If InStr(cgpi, "@") <> 0 Then
+                    cgpi = CDbl(Split(cgpi, "@")(0)) + CDbl(Split(cgpi, "@")(1))
+                End If
+                .Cells(row2, col_counter) = cgpi
+                col_counter = col_counter + 1
+                
+                For i = 0 To 6 Step 2
+                    'TH
+                    .Cells(row2, col_counter) = th_tw_arr(i)
+                    col_counter = col_counter + 1
+                    'TW
+                    .Cells(row2, col_counter) = th_tw_arr(i + 1)
+                    col_counter = col_counter + 1
+                    'IN
+                    .Cells(row2, col_counter) = ia_or_arr(i)
+                    col_counter = col_counter + 1
+                    'OR
+                    .Cells(row2, col_counter) = ia_or_arr(i + 1)
+                    col_counter = col_counter + 1
+                Next
+                
+                'Proj2-TW
+                .Cells(row2, col_counter) = th_tw_arr(8)
+                col_counter = col_counter + 1
+                'Proj2-OR
+                .Cells(row2, col_counter) = ia_or_arr(8)
+                col_counter = col_counter + 1
+                
+                sem_arr = Array("SEM-I:", "SEM-II:", "SEM-III:", "SEM-IV:", "SEM-V:", "SEM-VI:", "SEM-VII:")
+                For i = LBound(sem_arr) To UBound(sem_arr)
+                    If InStr(sgpi_line, sem_arr(i)) <> 0 Then
+                        .Cells(row2, col_counter + i) = Mid(sgpi_line, InStr(sgpi_line, sem_arr(i)) + Len(sem_arr(i)), 5)
+                        'col_counter = col_counter + 1
+                    Else
+                        .Cells(row2, col_counter + i) = ""
+                        'col_counter = col_counter + 1
+                    End If
+                Next
+                
+                row2 = row2 + 1
+            End If
+            
+            row1 = row1 + 1
+        Loop
+    End With
+    
+    Debug.Print ("Total Students: " + CStr(student_count))
+End Sub
